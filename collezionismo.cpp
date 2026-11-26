@@ -1,14 +1,12 @@
 #include <cstdio>
-#include <cstring>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <numeric>
 #include <set>
-#include <math.h>
-#include <utility>
 #include <vector>
-#include "defs.h"
+#include <limits>
+#include "defs.hpp"
 
 using namespace std;
 
@@ -27,58 +25,54 @@ void solve(i32 t) {
 
     K_l.back()+=N%K;
     {
-        int l_idx = 0;
-        for(int i=0;i<K;i++) {
+        i32 l_idx = 0;
+        for(i32 i=0;i<K;i++) {
             K_i[i] = l_idx;
             l_idx+=K_l[i];
         }
     } // compute K_i
 
-    for(i32 i=0;i<K-1;i++) {
-        i32 leftCost = 0,rightCost = 0;
-        i32 leftCount = 0,rightCount = 0;
 
-        for(i32 j=0;j<K_l[i+1]-1;j++) {
-            i32 center = leftCount+K_i[i+1]-1+j;
-            i32 iterLeftCost = (C[center]-C[center-1])-(C[center+1]-C[center]);
-            cout << "iterLeftCost=" << iterLeftCost << endl;
-            if(iterLeftCost < 0) {
-                break;
+    bool move = true;
+    while(move) {
+        move = false;
+        for(i32 i=0;i<K-1;i++) {
+            i32 leftCost  = 0, maxLeftCost = -1; i32 leftCount = 0;
+
+            for(i32 j=0;j<K_l[i+1]-1;j++) {
+                i32 center = K_i[i+1]+j;
+                leftCost += (C[center+1]-C[center])-(C[center]-C[center-1]);
+                if(leftCost > maxLeftCost) {
+                    maxLeftCost=leftCost;
+                    leftCount = j+1;
+                }
             }
-            leftCost+=iterLeftCost;
-            leftCount++;
-        }
 
-        // for(i32 j=K_i[i+1]-1;j>K_i[i];j++) {
-        //     i32 center = 
-        // }
-        
-        
-        if(leftCost > 0 || rightCost > 0) {
-            if(leftCost < rightCost) { // move to right (cursor goes left)
-                cout << "move to right" << endl;
-                K_l[i+1]+= rightCount;K_i[i+1]-=rightCount;  // push to right
-                K_l[i]  -= rightCount;                       // pop from left
-            } 
-            else {                     // move to left (cursor goes right)
-                cout << "move to left" << endl;
-                K_l[i+1]-= leftCount; K_i[i+1]+=leftCount;   // pop from right
-                K_l[i]  += leftCount;                        // push to left
+            i32 rightCost = 0, maxRightCost = -1; i32 rightCount = 0;
+
+            for(i32 j=0;j<K_l[i]-1;j++) {
+                i32 center = K_i[i+1]-j-1;
+                rightCost += (C[center]-C[center-1])-(C[center+1]-C[center]);
+                if(rightCost > maxRightCost) {
+                    maxRightCost=rightCost;
+                    rightCount = j+1;
+                }
             }
-        }
+            
+            if(maxLeftCost > 0 || maxRightCost > 0) {
+                move = true;
+                if(maxLeftCost < maxRightCost) { // move to right (cursor goes left)
+                    K_l[i+1] += rightCount; K_i[i+1]-=rightCount;  // push to right
+                    K_l[i]   -= rightCount;                       // pop from left
+                } 
+                else {                     // move to left (cursor goes right)
+                    K_l[i+1] -= leftCount; K_i[i+1]+=leftCount;   // pop from right
+                    K_l[i]   += leftCount;                        // push to left
+                }
+            }
 
+        }
     }
-
-        
-
-    // for(int i=0;i<K;i++) {
-    //     cout << endl << "i=" << i << " K_i[i]=" << K_i[i] << " K_l[i]=" << K_l[i] << endl;
-    //     for(int j=0;j<K_l[i];j++) {
-    //         // compute partitions sums
-    //         cout << "\tC[" << K_i[i]+j << "]=" << C[K_i[i]+j] << endl;
-    //     }
-    // }
-
     
     int risposta = 0;
 
@@ -89,12 +83,14 @@ void solve(i32 t) {
     cout << "Case #" << t << ": " << risposta << "\n";
 }
 
+
+
 int main() {
     // se preferisci leggere e scrivere da file
     // ti basta decommentare le seguenti due righe:
 
     freopen("input.txt", "r", stdin);
-    //freopen("output.txt", "w", stdout);
+    freopen("output.txt", "w", stdout);
 
     int T;
     cin >> T;
