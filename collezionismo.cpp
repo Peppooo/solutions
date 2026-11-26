@@ -21,63 +21,34 @@ void solve(i32 t) {
 
     sort(C.begin(),C.end());
     
-    vector<i32> K_l(K,N/K),K_i(K,0);
+    vector<pair<i32,i32>> diff(N-1);
 
-    K_l.back()+=N%K;
-    {
-        i32 l_idx = 0;
-        for(i32 i=0;i<K;i++) {
-            K_i[i] = l_idx;
-            l_idx+=K_l[i];
-        }
-    } // compute K_i
-
-
-    bool move = true;
-    while(move) {
-        move = false;
-        for(i32 i=0;i<K-1;i++) {
-            i32 leftCost  = 0, maxLeftCost = -1; i32 leftCount = 0;
-
-            for(i32 j=0;j<K_l[i+1]-1;j++) {
-                i32 center = K_i[i+1]+j;
-                leftCost += (C[center+1]-C[center])-(C[center]-C[center-1]);
-                if(leftCost > maxLeftCost) {
-                    maxLeftCost=leftCost;
-                    leftCount = j+1;
-                }
-            }
-
-            i32 rightCost = 0, maxRightCost = -1; i32 rightCount = 0;
-
-            for(i32 j=0;j<K_l[i]-1;j++) {
-                i32 center = K_i[i+1]-j-1;
-                rightCost += (C[center]-C[center-1])-(C[center+1]-C[center]);
-                if(rightCost > maxRightCost) {
-                    maxRightCost=rightCost;
-                    rightCount = j+1;
-                }
-            }
-            
-            if(maxLeftCost > 0 || maxRightCost > 0) {
-                move = true;
-                if(maxLeftCost < maxRightCost) { // move to right (cursor goes left)
-                    K_l[i+1] += rightCount; K_i[i+1]-=rightCount;  // push to right
-                    K_l[i]   -= rightCount;                       // pop from left
-                } 
-                else {                     // move to left (cursor goes right)
-                    K_l[i+1] -= leftCount; K_i[i+1]+=leftCount;   // pop from right
-                    K_l[i]   += leftCount;                        // push to left
-                }
-            }
-
-        }
+    for(i32 i=0;i<N-1;i++) {
+        diff[i].first = C[i+1]-C[i];
+        diff[i].second = i;
     }
-    
-    int risposta = 0;
 
-    for(int i=0;i<K;i++) {
-        risposta+=C[K_i[i]+K_l[i]-1]-C[K_i[i]];
+
+    sort(diff.rbegin(),diff.rend());
+
+    // vector<i32> split(K);
+
+    // split.front() = 0;
+    
+    // for(i32 i=1;i<K;i++) {
+    //     split[i] = diff[i].second;
+    //     cout << diff[i].first << ": " << diff[i].second << endl;
+    // }
+
+    // sort(split.begin(),split.end());
+
+    i32 risposta = C[N-1]-C[0];
+
+    for(i32 i=0;i<K-1;i++) {
+        // i32 first = split[i],last = split[i+1];
+        // cout << split[i] << endl;
+        // risposta+=C[last]-C[first];
+        risposta-=diff[i].first;
     }
 
     cout << "Case #" << t << ": " << risposta << "\n";
@@ -90,7 +61,7 @@ int main() {
     // ti basta decommentare le seguenti due righe:
 
     freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
+    //freopen("output.txt", "w", stdout);
 
     int T;
     cin >> T;
